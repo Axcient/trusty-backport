@@ -2,19 +2,10 @@
 docker build \
     --build-arg name="Jared Johnson" \
     --build-arg email="jjohnson@efolder.net" \
-    --build-arg version="efs1204+0" \
-    --build-arg distribution="rb-precise-alpha" \
+    --build-arg version="efs1404+0" \
+    --build-arg distribution="rb-trusty-alpha" \
     -t \
-    build-kernel \
+    build-trusty \
     .
 
-docker create \
-    -v ccache:/ccache \
-    --name ccache \
-    build-kernel
-docker run \
-    --rm \
-    --volumes-from ccache \
-    -it \
-    -v "${PWD}/output:/out" \
-    build-kernel
+docker run --rm -it -v "${PWD}/output:/out" build-trusty
