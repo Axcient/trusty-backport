@@ -14,7 +14,7 @@ for debian_dir in "${package}/debian" "${package}/debian.master"; do
         --local "~${VERSION}" \
         --distribution "${DISTRIBUTION}" \
         --force-distribution \
-        "Backport for Precise."
+        "Backport for Trusty."
 
     # Validate version change somewhat
     head -n1 $changelog_file \

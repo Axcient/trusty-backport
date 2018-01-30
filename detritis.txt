@@ -1,0 +1,105 @@
+#RUN apt-get install -y \
+#  libcgmanager-dev \
+#  libdbus-1-dev \
+#  libdconf-dev \
+#  libjson-c-dev \
+#  libnih-dbus-dev \
+#  libudev-dev \
+#  nih-dbus-tool \
+#  bdfresize \
+#  xkb-data-i18n \
+#  keymapper \
+#  sharutils \
+#  linux-base \
+#  bison
+##  quilt \
+## libcryptsetup4 \
+## libpam0g-dev \
+## libsystemd-journal0 \
+## systemd
+#RUN dpkg -i \
+#  --force-depends \
+#  .20160115ubuntu3_all.deb \
+#  && rm -rf *
+#RUN apt-src --build install bats
+#RUN dpkg -i bats_0.4.0-1ubuntu4_all.deb && rm -rf *
+#
+#RUN apt-src --build install dh-exec
+#RUN dpkg -i dh-exec_0.23_amd64.deb && rm -rf *
+#
+## Circular dependency between libsystemd and libblkid-dev means there's no choice but to install one of these as a binary package
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/libsystemd-dev_229-4ubuntu10_amd64.deb
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/libsystemd0_229-4ubuntu10_amd64.deb
+##RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_229-4ubuntu10_amd64.deb
+#RUN dpkg -i \
+#  libsystemd-dev_229-4ubuntu10_amd64.deb \
+#  libsystemd0_229-4ubuntu10_amd64.deb \
+#  && rm -rf *
+##  systemd_229-4ubuntu10_amd64.deb
+##http://mirrors.kernel.org/ubuntu/pool/main/u/util-linux/libblkid-dev_2.27.1-6ubuntu3_amd64.deb
+#RUN apt-src --build install \
+#  console-setup \
+#  initramfs-tools \
+#  upstart \
+#  lsb-base \
+#  keyboard-configuration \
+#  klibc-utils
+#
+## TODO: Get rid of this hack and uncomment quilt above
+#RUN wget http://mirrors.kernel.org/ubuntu/pool/main/q/quilt/quilt_0.61-1_all.deb
+#RUN wget http://mirrors.kernel.org/ubuntu/pool/main/c/cryptsetup/libcryptsetup4_1.6.1-1ubuntu1_amd64.deb
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/p/pam/libpam0g-dev_1.1.8-1ubuntu2.2_amd64.deb
+#RUN wget http://mirrors.kernel.org/ubuntu/pool/main/s/systemd/libsystemd-journal0_204-5ubuntu20_amd64.deb
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_229-4ubuntu10_amd64.deb
+#RUN dpkg -i \
+#  quilt_0.61-1_all.deb \
+#  libcryptsetup4_1.6.1-1ubuntu1_amd64.deb \
+#  libpam0g-dev_1.1.8-1ubuntu2.2_amd64.deb
+#RUN dpkg -i \
+#  --auto-deconfigure \
+#  libsystemd-journal0_204-5ubuntu20_amd64.deb \
+#  systemd_229-4ubuntu10_amd64.deb
+#RUN apt-src --build install \
+#  initscripts \
+#  util-linux
+#RUN ls *.deb && efijijfi
+#RUN dpkg -i \
+#  console-setup_1.108ubuntu15.3_all.deb \
+#  initscripts_2.88dsf-59.3ubuntu2_amd64.deb
+#
+#RUN rm -rf /etc/console-setup
+#RUN dpkg -i \
+#  --auto-deconfigure \
+#  initramfs-tools_0.122ubuntu8.10_all.deb \
+#  initramfs-tools-core_0.122ubuntu8.10_all.deb \
+#  initramfs-tools-bin_0.122ubuntu8.10_amd64.deb \
+#  libklibc_2.0.4-8ubuntu1.16.04.4_amd64.deb \
+#  klibc-utils_2.0.4-8ubuntu1.16.04.4_amd64.deb \
+#  console-setup-linux_1.108ubuntu15.3_all.deb \
+#  keyboard-configuration_1.108ubuntu15.3_all.deb \
+#  upstart_1.13.2-0ubuntu21.1_amd64.deb \
+#  lsb-base_9.20160110ubuntu0.2_all.deb \
+#  && rm -rf *
+#RUN apt-src --build install dbus
+#RUN dpkg -i \
+#  dbus_1.10.6-1ubuntu3.3_amd64.deb \
+#  libdbus-1-3_1.10.6-1ubuntu3.3_amd64.deb \
+#  && rm -rf *
+##libdbus-1-dev_1.10.6-1ubuntu3.3_amd64.deb
+#
+#RUN apt-src --build install dpkg-dev
+#RUN dpkg -i \
+#  dpkg-dev_1.18.4ubuntu1.3_all.deb \
+#  libdpkg-perl_1.18.4ubuntu1.3_all.deb \
+#  dpkg_1.18.4ubuntu1.3_amd64.deb
+#
+## All is well with the world, we can now build a new systemd-dev package just to be paranoid
+#RUN apt-src --build libsystemd
+#RUN dpkg -i \
+#  libsystemd-dev_229-4ubuntu10_amd64.deb \
+#  libsystemd0_229-4ubuntu10_amd64.deb \
+#  && rm -rf *
+#
+:q
+#
+
