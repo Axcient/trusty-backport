@@ -21,8 +21,8 @@ RUN apt-get update && apt-get install -y \
   sudo \
   wget \
   less \
-  vim
-#  quilt
+  vim \
+  quilt
 
 WORKDIR /build
 
@@ -41,9 +41,6 @@ COPY utopic-source-packages.list /etc/apt/sources.list.d/
 RUN sudo apt-get update && apt-src install libvirt-bin
 ARG libvirt="libvirt-1.2.8"
 
-# TODO: Move to top
-RUN sudo apt-get update && sudo apt-get install -y \
-  quilt
 # Apply security updates that never made it into non-LTS Utopic release
 ARG patch="CVE-2015-5313.patch"
 ARG to_patch="src/storage/storage_backend_fs.c"
