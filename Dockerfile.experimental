@@ -222,6 +222,57 @@ RUN sudo dpkg -i \
   dh-exec_*.deb \
   && rm -rf *
 
+#########################
+#########################
+#########################
+#########################
+#########################
+#########################
+# Temporary hack for cache
+#########################
+#########################
+#########################
+#########################
+#########################
+#RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/dpkg_1.18.1ubuntu1.tar.xz
+#RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/dpkg_1.18.1ubuntu1.dsc
+#RUN dpkg-source -x dpkg_1.18.1ubuntu1.dsc
+#RUN cd dpkg-1.18.1ubuntu1 && debuild -i -uc -us -b
+#RUN apt-src --build install fontconfig
+#RUN apt-src --build install ureadahead
+#RUN sudo dpkg -i \
+#  fontconfig_*.deb \
+#  libfontconfig1_*.deb \
+#  fontconfig-config_*.deb \
+#  ureadahead_*.deb \
+#  dpkg_*.deb \
+#  && rm -rf *
+#RUN wget http://launchpadlibrarian.net/188671498/dpkg_1.17.21ubuntu1_amd64.deb
+#RUN wget http://mirrors.kernel.org/ubuntu/pool/main/u/util-linux/libblkid-dev_2.27.1-6ubuntu3_amd64.deb
+#RUN apt-src --build install libsepol1-dev
+#RUN sudo dpkg -i \
+#  libsepol1-dev_*.deb \
+#  libsepol1_*.deb
+## We probably need one of these to fix a build failure
+#RUN sudo apt-get update && sudo apt-get install -y #\
+#  ruby \
+#  ruby-dev \
+#  ruby-mkrf
+#RUN apt-src --build install libselinux1
+#########################
+#########################
+#########################
+#########################
+#########################
+#########################
+#########################
+#########################
+#########################
+#RUN sudo dpkg -i \
+#  libselinux1 \
+#  dpkg_1.17.21ubuntu1_amd64.deb \
+#  libblkid-dev_2.27.1-6ubuntu3_amd64.deb \
+#  && rm -rf *
 # Temporarily copy Xenial binary sources to Trusty system
 RUN sudo apt-get update && sudo apt-get install -y \
   aptitude
@@ -253,11 +304,28 @@ RUN sudo dpkg -i \
   gcc-5-base_5.4.0-6ubuntu1~16.04.4_amd64.deb \
   && rm -rf *
 
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/libsystemd-dev_229-4ubuntu10_amd64.deb
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/libsystemd0_229-4ubuntu10_amd64.deb
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_229-4ubuntu10_amd64.deb
+#RUN wget http://security.ubuntu.com/ubuntu/pool/main/s/systemd/libpam-systemd_229-4ubuntu10_amd64.deb
+#RUN sudo apt-get update && sudo apt-get install -y \
+#  libgcrypt20 \
+#  libgpg-error0
+##  systemd
+#RUN sudo dpkg -i \
+#  --auto-deconfigure \
+#  libsystemd-dev_229-4ubuntu10_amd64.deb
+#  libsystemd0_229-4ubuntu10_amd64.deb \
+#  systemd_229-4ubuntu10_amd64.deb \
+#  libpam-systemd_229-4ubuntu10_amd64.deb \
+#  && rm -rf *
+#RUN dpkg -l|grep systemd
+#RUN sudo apt-get update && \
+#  apt-src --build install libsystemd-dev
+
 RUN sudo apt-get update && sudo aptitude build-dep -y \
   libvirt-bin
 COPY xenial-binary-packages.list /etc/apt/sources.list.d/xenial-binary-packages.list
-RUN sudo apt-get update && sudo apt-get install -y \
-  binutils
 RUN sudo apt-get update && apt-src install libvirt-bin
 
 # Set name and email that will appear in changelog entries
@@ -271,19 +339,8 @@ ENV VERSION=${version}
 ENV DISTRIBUTION=${distribution}
 
 COPY build_backport.sh /build
-# Skip tests for xml parsing of xen stuff...
-# if it's really broken we shouldn't notice before switching to upstream
-ARG lvtest="tests/xlconfigtest.c"
-RUN cd libvirt-1.3.1 \
-  && quilt new remove-borked-test.patch \
-  && quilt add ${lvtest} \
-  && grep -vE \
-    'DO_TEST\("(new-disk|spice|spice-features|vif-rate|fullvirt-multiusb)"\)' \
-    ${lvtest} \
-  > ${lvtest}.new \
-  && mv ${lvtest}.new ${lvtest} \
-  && quilt refresh
-RUN ./build_backport.sh libvirt-1.3.1
+RUN ./build_backport.sh libvirt-1.3.1 \
+    --set-envvar CC=gcc-4.8
 RUN sudo rm -f /etc/apt/sources.list.d/xenial-binary-packages.list && sudo apt-get update
 
 VOLUME /out
