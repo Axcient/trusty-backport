@@ -37,8 +37,21 @@ RUN chown -R builder:builder \
 USER builder
 RUN mkdir -p ~/.apt-src
 
+# Set name and email that will appear in changelog entries
+ARG name="Backport Builder"
+ARG email="nowhere@example.com"
+ARG version="backport"
+ARG distribution="trusty"
+ENV NAME=${name}
+ENV EMAIL=${email}
+ENV VERSION=${version}
+ENV DISTRIBUTION=${distribution}
+
+COPY build_backport.sh /scripts/
+
 COPY utopic-source-packages.list /etc/apt/sources.list.d/
 RUN sudo apt-get update && apt-src install libvirt-bin
+RUN rm /etc/apt/sources.list.d/utopic-source-packages.list
 ARG libvirt="libvirt-1.2.8"
 
 # Apply security updates that never made it into non-LTS Utopic release
@@ -52,18 +65,25 @@ RUN cd ${libvirt} \
   && quilt refresh \
   && quilt pop -a
 
-# Set name and email that will appear in changelog entries
-ARG name="Backport Builder"
-ARG email="nowhere@example.com"
-ARG version="backport"
-ARG distribution="trusty"
-ENV NAME=${name}
-ENV EMAIL=${email}
-ENV VERSION=${version}
-ENV DISTRIBUTION=${distribution}
-
-COPY build_backport.sh /scripts/
 RUN /scripts/build_backport.sh ${libvirt}
+
+COPY xenial-source-packages.list /etc/apt/sources.list.d/
+RUN sudo apt-get update && sudo aptitude build-depends -y python2.7
+
+# GCC 5
+RUN sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+RUN sudo apt-get update && sudo aptitude build-depends -y python2.7
+COPY switch-gcc.sh /script/
+RUN sudo /script/switch-gcc.sh 5
+RUN rm /etc/apt/sources.list.d/ubuntu-toolchain-r-test-trusty.list
+
+# dpkg-dev >= 1.17.11
+COPY utopic-binary-packages.list /etc/apt/sources.list.d/
+RUN sudo apt-get update && sudo aptitude build-depends -y python2.7
+RUN rm /etc/apt/sources.list.d/utopic-binary-packages.list
+
+RUN sudo apt-get update && apt-src install python2.7
+RUN /scripts/build_backport.sh python2.7-2.7.12
 
 VOLUME /out
 
