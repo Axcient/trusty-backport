@@ -49,6 +49,38 @@ ENV DISTRIBUTION=${distribution}
 
 COPY build_backport.sh /scripts/
 
+##### Backports from Xenial before installing any Utopic packages necessary for libvirt
+COPY xenial-source-packages.list /etc/apt/sources.list.d/
+
+## Backport necessary qemu build deps from Xenial
+
+# Shortcut to get libtool-bin which has circular deps with
+# automake/autoconf when attempting backport
+COPY xenial-binary-packages.list /etc/apt/sources.list.d/
+RUN sudo apt-get update && sudo apt-get install -y libtool-bin
+RUN sudo rm /etc/apt/sources.list.d/xenial-binary-packages.list
+
+RUN sudo apt-get update && apt-src install libcacard-dev
+RUN /scripts/build_backport.sh libcacard-2.5.0
+RUN sudo dpkg -i \
+  libcacard-dev_2.5.0-2~efs1404+01_amd64.deb \
+  libcacard0_2.5.0-2~efs1404+01_amd64.deb
+
+# qemu depends on new libiscsi-dev
+RUN sudo apt-get update && apt-src install libiscsi-dev
+RUN /scripts/build_backport.sh libiscsi-1.12.0
+RUN sudo dpkg -i \
+  libiscsi-dev_1.12.0-2~efs1404+01_amd64.deb \
+  libiscsi2_1.12.0-2~efs1404+01_amd64.deb
+
+# Install build deps that can be found in Trusty
+RUN sudo apt-get update && apt-src install qemu
+RUN /scripts/build_backport.sh qemu-2.5+dfsg
+
+# Done backporting qemu from Xenial; remove sources.list so the environment
+# stays clean for Utopic backport
+RUN sudo rm /etc/apt/sources.list.d/xenial-source-packages.list
+
 COPY utopic-source-packages.list /etc/apt/sources.list.d/
 RUN sudo apt-get update && apt-src install libvirt-bin
 RUN sudo rm /etc/apt/sources.list.d/utopic-source-packages.list

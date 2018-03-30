@@ -2,13 +2,13 @@ OUTPUT_DIR := $(CURDIR)/output
 
 .PHONY: build clean
 
-clean:
-	@rm -rf $(OUTPUT_DIR)/*
-
 build:
-	@$(MAKE) clean
-	@$(CURDIR)/build.sh
+	$(MAKE) clean
+	$(CURDIR)/build.sh
+
+clean:
+	rm -rf $(OUTPUT_DIR)/*
 
 #deploy:
-#	@$(CURDIR)/deploy.sh
+#	$(CURDIR)/deploy.sh
 
