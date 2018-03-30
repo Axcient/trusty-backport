@@ -2,8 +2,7 @@ OUTPUT_DIR := $(CURDIR)/output
 
 .PHONY: build clean
 
-build:
-	$(MAKE) clean
+build: clean
 	$(CURDIR)/build.sh
 
 clean:

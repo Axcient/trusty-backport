@@ -49,6 +49,15 @@ ENV DISTRIBUTION=${distribution}
 
 COPY build_backport.sh /scripts/
 
+##### Backports from Vivid before installing any Utopic packages necessary for libvirt
+COPY vivid-source-packages.list /etc/apt/sources.list.d/
+
+RUN sudo apt-get update && apt-src install seabios
+RUN /scripts/build_backport.sh seabios-1.7.5
+
+RUN sudo rm /etc/apt/sources.list.d/vivid-source-packages.list
+
+
 ##### Backports from Xenial before installing any Utopic packages necessary for libvirt
 COPY xenial-source-packages.list /etc/apt/sources.list.d/
 
