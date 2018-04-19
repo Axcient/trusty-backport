@@ -1,0 +1,21 @@
+diff --git a/config/spl-build.m4 b/config/spl-build.m4
+index 9c97e64..fde6787 100644
+--- a/config/spl-build.m4
++++ b/config/spl-build.m4
+@@ -186,6 +186,16 @@ AC_DEFUN([SPL_AC_KERNEL], [
+ 	AC_SUBST(LINUX_OBJ)
+ 	AC_SUBST(LINUX_VERSION)
+ 
++	AC_MSG_CHECKING([kernel retpoline support])
++	retpo=$(grep CONFIG_RETPOLINE /usr/src/linux-headers-${kernsrcver}/.config)
++	kern_has_retpoline="no"
++	if ! test -z "$retpo"; then
++		EXTRA_KCFLAGS="-mindirect-branch=thunk-extern -mindirect-branch-register -DCONFIG_RETPOLINE"
++		AC_SUBST(EXTRA_KCFLAGS)
++		kern_has_retpoline="yes"
++	fi
++	AC_MSG_RESULT([$kern_has_retpoline])
++
+ 	SPL_AC_MODULE_SYMVERS
+ ])
+ 
