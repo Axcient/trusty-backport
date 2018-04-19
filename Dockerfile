@@ -46,8 +46,99 @@ ENV NAME=${name}
 ENV EMAIL=${email}
 ENV VERSION=${version}
 ENV DISTRIBUTION=${distribution}
+ENV QUILT_PATCHES=debian/patches
 
 COPY build_backport.sh /scripts/
+
+##### Forward-port ZFS/SPL 0.7.1 package from PPA to newer ZFS version
+# See https://www.debian.org/doc/manuals/maint-guide/update.en.html#newupstream
+ARG new_zfs_version="0.7.8"
+
+# Get source packages from PPA
+RUN sudo add-apt-repository -y ppa:zfs-native/staging
+RUN sudo \
+  sed -i "s/# deb-src /deb-src /g" \
+  /etc/apt/sources.list.d/zfs-native-staging-trusty.list
+RUN sudo apt-get update \
+  && apt-src install \
+    zfs-linux \
+    spl-linux
+RUN sudo rm /etc/apt/sources.list.d/zfs-native-staging-trusty.list
+
+
+# get newer sources
+ARG spl_dir="spl-linux-${new_zfs_version}"
+
+RUN wget \
+  https://github.com/zfsonlinux/zfs/releases/download/zfs-${new_zfs_version}/spl-${new_zfs_version}.tar.gz
+RUN tar -xvzf spl-${new_zfs_version}.tar.gz
+RUN mv spl-${new_zfs_version} ${spl_dir}
+RUN mv spl-${new_zfs_version}.tar.gz spl-linux_${new_zfs_version}.orig.tar.gz
+RUN mv spl-linux-0.7.1/debian ${spl_dir}/
+# Add changelog entry for new version
+RUN debchange \
+  --changelog ${spl_dir}/debian/changelog \
+  --newversion ${new_zfs_version}-0~${VERSION} \
+  --distribution ${DISTRIBUTION} \
+  --force-distribution \
+  "Forward-port to ${new_zfs_version}."
+# Delete quilt patch from backporter that looks wrong
+RUN cd ${spl_dir} \
+  && quilt delete -r debian-changes-0.7.1-1~trusty
+RUN cd ${spl_dir} \
+  && while quilt push; do quilt refresh; done
+
+# Apply retpoline pach from David Hollister
+ARG spl_patch="spl-retpoline.patch"
+ARG spl_to_patch="config/spl-build.m4"
+COPY ${spl_patch} /patches/
+RUN cd ${spl_dir} \
+  && quilt new ${spl_patch} \
+  && quilt add ${spl_to_patch} \
+  && patch ${spl_to_patch} /patches/${spl_patch} \
+  && quilt refresh \
+  && quilt pop -a
+
+RUN cd ${spl_dir} \
+  && debuild -i -uc -us
+RUN rm -rf ${spl_dir}
+
+
+# get newer sources
+ARG zfs_dir="zfs-linux-${new_zfs_version}"
+
+RUN wget \
+  https://github.com/zfsonlinux/zfs/releases/download/zfs-${new_zfs_version}/zfs-${new_zfs_version}.tar.gz
+RUN tar -xvzf zfs-${new_zfs_version}.tar.gz
+RUN mv zfs-${new_zfs_version} ${zfs_dir}
+RUN mv zfs-${new_zfs_version}.tar.gz zfs-linux_${new_zfs_version}.orig.tar.gz
+RUN mv zfs-linux-0.7.1/debian ${zfs_dir}/
+# Add changelog entry for new version
+RUN debchange \
+  --changelog ${zfs_dir}/debian/changelog \
+  --newversion ${new_zfs_version}-0~${VERSION} \
+  --distribution ${DISTRIBUTION} \
+  --force-distribution \
+  "Forward-port to ${new_zfs_version}."
+# Refresh quilt patches
+RUN cd ${zfs_dir} \
+  && while quilt push; do quilt refresh; done
+
+# Apply retpoline pach from David Hollister
+ARG zfs_patch="zfs-retpoline.patch"
+ARG zfs_to_patch="config/kernel.m4"
+COPY ${zfs_patch} /patches/
+RUN cd ${zfs_dir} \
+  && quilt new ${zfs_patch} \
+  && quilt add ${zfs_to_patch} \
+  && patch ${zfs_to_patch} /patches/${zfs_patch} \
+  && quilt refresh \
+  && quilt pop -a
+
+RUN cd ${zfs_dir} \
+  && debuild -i -uc -us
+RUN rm -rf ${zfs_dir}
+
 
 ##### Backports from Vivid before installing any Utopic packages necessary for libvirt
 COPY vivid-source-packages.list /etc/apt/sources.list.d/
@@ -96,13 +187,13 @@ RUN sudo rm /etc/apt/sources.list.d/utopic-source-packages.list
 ARG libvirt="libvirt-1.2.8"
 
 # Apply security updates that never made it into non-LTS Utopic release
-ARG patch="CVE-2015-5313.patch"
-ARG to_patch="src/storage/storage_backend_fs.c"
-COPY ${patch} /patches/
+ARG libvirt_patch="CVE-2015-5313.patch"
+ARG libvirt_to_patch="src/storage/storage_backend_fs.c"
+COPY ${libvirt_patch} /patches/
 RUN cd ${libvirt} \
-  && quilt new ${patch} \
-  && quilt add ${to_patch} \
-  && patch ${to_patch} /patches/${patch} \
+  && quilt new ${libvirt_patch} \
+  && quilt add ${libvirt_to_patch} \
+  && patch ${libvirt_to_patch} /patches/${libvirt_patch} \
   && quilt refresh \
   && quilt pop -a
 
