@@ -57,7 +57,7 @@ RUN sudo apt-get update \
     -y \
     --download-only \
     -o Dir::Cache::Archives="/build/" \
-    install gcc-4.9
+    install gcc-4.9 g++-4.9
 RUN sudo rm /etc/apt/sources.list.d/ubuntu-toolchain-r-test-trusty.list
 RUN sudo rm -rf /build/lock /build/partial
 RUN sudo chown builder:builder /build/*.deb
