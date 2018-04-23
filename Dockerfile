@@ -90,7 +90,7 @@ RUN mv spl-linux-0.7.1/debian ${spl_dir}/
 # Add changelog entry for new version
 RUN debchange \
   --changelog ${spl_dir}/debian/changelog \
-  --newversion ${new_zfs_version}-0~${VERSION} \
+  --newversion ${new_zfs_version}-1~0${VERSION} \
   --distribution ${DISTRIBUTION} \
   --force-distribution \
   "Forward-port to ${new_zfs_version}."
@@ -128,7 +128,7 @@ RUN mv zfs-linux-0.7.1/debian ${zfs_dir}/
 # Add changelog entry for new version
 RUN debchange \
   --changelog ${zfs_dir}/debian/changelog \
-  --newversion ${new_zfs_version}-0~${VERSION} \
+  --newversion ${new_zfs_version}-1~0${VERSION} \
   --distribution ${DISTRIBUTION} \
   --force-distribution \
   "Forward-port to ${new_zfs_version}."
@@ -151,6 +151,8 @@ RUN cd ${zfs_dir} \
   && debuild -i -uc -us
 RUN rm -rf ${zfs_dir}
 
+# Remove leftovers from zfs and spl builds
+RUN rm -rf *0.7.1*
 
 ##### Backports from Vivid before installing any Utopic packages necessary for libvirt
 COPY vivid-source-packages.list /etc/apt/sources.list.d/
