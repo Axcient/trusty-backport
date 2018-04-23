@@ -50,6 +50,12 @@ ENV QUILT_PATCHES=debian/patches
 
 COPY build_backport.sh /scripts/
 
+# Retrieve binary packages for gcc-4.9 from toolchain test PPA
+RUN sudo add-apt-repository -y ppa:zfs-native/stable
+RUN sudo apt-get update \
+  && apt-get download ubuntu-zfs
+RUN sudo rm /etc/apt/sources.list.d/zfs-native-stable-trusty.list
+
 ##### Forward-port ZFS/SPL 0.7.1 package from PPA to newer ZFS version
 # See https://www.debian.org/doc/manuals/maint-guide/update.en.html#newupstream
 ARG new_zfs_version="0.7.8"
