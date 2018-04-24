@@ -141,6 +141,11 @@ RUN cd ${zfs_dir} \
   && quilt refresh \
   && quilt pop -a
 
+# Allow scripts/* to be installed to /usr/src/zfs-$version
+# This fixes zfs DKMS module builds which depend on scripts/enum-extract.pl
+RUN sed -i "s/find cmd dracut etc lib man rpm scripts udev/find cmd dracut etc lib man rpm udev/" \
+  ${zfs_dir}/debian/rules
+
 RUN cd ${zfs_dir} \
   && debuild -i -uc -us
 RUN rm -rf ${zfs_dir}
